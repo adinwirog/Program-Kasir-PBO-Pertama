@@ -34,6 +34,21 @@ class dataKasir(Database):
                 return True
         return False
 
+    def cekidkasir(self,a):
+        self.a = a
+        self.query = "SELECT idoperator FROM `operator kasir` WHERE namaoperator = '{}' ".format(self.a)
+        self.cursor.execute(self.query)
+        self.res = self.cursor.fetchone()
+        return self.res[0]
+
+    def ceknamakasir(self, usernama, sandikasir):
+        self.usernama = usernama
+        self.sandikasir = sandikasir
+        self.query = "SELECT namaoperator FROM `operator kasir` WHERE usernamekasir = '{}' AND passwordkasir = '{}' ".format(self.usernama,self.sandikasir)
+        self.cursor.execute(self.query)
+        self.res = self.cursor.fetchone()
+        return self.res[0]
+
     def show(self):
         self.cursor.execute("SELECT * FROM `operator kasir`")
         self.res = self.cursor.fetchall()
@@ -96,9 +111,7 @@ class dataProduk(Database):
     def getHarga(self,a):
         self.a = a
         self.query = "SELECT hargabarang FROM `produk` WHERE idbarang = '{}' ".format(self.a)
-        # self.tuple = (self.a)
         self.cursor.execute(self.query)
-        # self.con.commit()
         self.res = self.cursor.fetchone()
         return int(self.res[0])
 
@@ -129,6 +142,33 @@ class dataProduk(Database):
         pass
 
 class dataPembeli(Database):
+    def cekPembelipass(self,a,b,c):
+        self.a = a
+        self.b = b
+        self.c = c
+        self.query = "SELECT namapembeli FROM `pembeli` WHERE namapembeli = '{}' AND telepon = '{}' AND alamat = '{}' ".format(self.a,self.b,self.c)
+        self.cursor.execute(self.query)
+        self.res = self.cursor.fetchone()
+        return self.res
+
+    def cekid(self,a,b,c):
+        self.a = a
+        self.b = b
+        self.c = c
+        self.query = "SELECT idpembeli FROM `pembeli` WHERE namapembeli = '{}' AND telepon = '{}' AND alamat = '{}' ".format(self.a,self.b,self.c)
+        self.cursor.execute(self.query)
+        self.res = self.cursor.fetchone()
+        return self.res[0]
+
+    def cekPembeli(self,a,b,c):
+        self.a = a
+        self.b = b
+        self.c = c
+        self.query = "SELECT namapembeli FROM `pembeli` WHERE namapembeli = '{}' AND telepon = '{}' AND alamat = '{}' ".format(self.a,self.b,self.c)
+        self.cursor.execute(self.query)
+        self.res = self.cursor.fetchone()
+        return self.res[0]
+
     def show(self):
         self.cursor.execute("SELECT * FROM `pembeli`")
         self.res = self.cursor.fetchall()
@@ -157,13 +197,25 @@ class dataTransaksi(Database):
         for x in self.res:
             print(x)
 
-    def insert(self):
-        pass
+    def insert(self,a,b,c,d,e):
+        self.a = a
+        self.b = b
+        self.c = c
+        self.d = d
+        self.e = e
+        self.query = "INSERT INTO transaksi(idoperator, idbarang, idpembeli, kuantitas, totalharga) VALUES('{}', '{}', '{}', '{}', '{}')".format(self.a,self.b,self.c,self.d,self.e)
+        self.cursor.execute(self.query)
+        self.con.commit()
 
     def delete(self):
         pass
 
+class dataRiwayat(Database):
+    def show(self):
+        pass
+
 class Sistem:
+    namakasir = ""
     def otentifikasi(self):
         print("\n====== Selamat Datang Di Program Kasir Mbah Mutim ======")
         print("Pilih Menu")
@@ -278,27 +330,34 @@ class Sistem:
 
     def masukKasir(self):
         w = dataKasir()
-        b = str(input("Masukkan username=> "))
-        c = str(getpass.getpass("Masukkan Password=> "))
+        self.usernamekasir = str(input("Masukkan username=> "))
+        self.passwordkasir = str(getpass.getpass("Masukkan Password=> "))
         i = 0
-        if w.validasipass(b,c) == True:
-            self.menuKasir()
+        if w.validasipass(self.usernamekasir,self.passwordkasir) == True:
+            self.cekkasir(self.usernamekasir,self.passwordkasir)
         else:
             print("\n!!!! Sepertinya Input Anda Salah. Coba Lagi !!!!!")
-            while i<=3 and w.validasipass(b,c) == False:
-                b = str(input("Masukkan username=> "))
-                c = str(getpass.getpass("Masukkan Password=> "))
-                if w.validasipass(b,c) == True:
-                    self.menuKasir()
+            while i<=3 and w.validasipass(self.usernamekasir,self.passwordkasir) == False:
+                self.usernamekasir = str(input("Masukkan username=> "))
+                self.passwordkasir = str(getpass.getpass("Masukkan Password=> "))
+                if w.validasipass(self.usernamekasir,self.passwordkasir) == True:
+                    self.cekkasir(self.usernamekasir,self.passwordkasir)
                 else:
                     i += 1 
                     if i > 3:
                         print()
                     else:
                         print("\n!!!! Coba Lagi !!!!!")
-            if w.validasipass(b,c) == False:
+            if w.validasipass(self.usernamekasir,self.passwordkasir) == False:
                 print("\n!!!!Sepertinya Anda Lupa Username Dan Password. Atau Anda Belum Terdaftar Di Program ini!!!!")
                 print("\n!!!!Jika Anda Belum Terdaftar, Segera Sign Up Dan Hubungi Admin Program Ini!!!!")
+
+    def cekkasir(self,a,b):
+        self.a = a
+        self.b = b
+        f = dataKasir()
+        self.namakasir = f.ceknamakasir(self.a,self.b)
+        self.menuKasir(self.namakasir)
 
     def menuAdmin(self):
         print("\n====== Menu Utama Admin ======")
@@ -306,51 +365,70 @@ class Sistem:
         print("1. Daftar Operator \n2. Daftar Produk \n3. Daftar Pembeli")
         print("4. Daftar Transaksi \n5. Recovery Admin \n6. Keluar")
 
-    def menuKasir(self):
+    def menuKasir(self,a):
+        self.a = a
         print("\n====== Menu Utama Kasir ======")
         print("\nPilih Menu Di Sini\n")
         print("1. Transaksi \n2. Lihat Daftar Produk \n3. Keluar")
         masuk = str(input("Input Di Sini => "))
         if masuk == str(1):
-            self.lakukanTransaksi()
+            self.lakukanTransaksi(self.a)
         elif masuk == str(2):
-            self.lihatProduk()
+            self.lihatProduk(self.a)
         elif masuk == str(3):
             print("\n====== Terima Kasih Telah Menggunakan ======")
         else:
             print("\nInput salah, Coba lagi")
-            self.menuKasir()
+            self.menuKasir(self.a)
 
-    def lakukanTransaksi(self):
+    def lakukanTransaksi(self,a):
+        self.a = a
         d1 = transaksiKasir()
-        nama = str(input("Masukkan Nama Pembeli => "))
-        nomor = str(input("Nomor Telepon Pembeli => "))
-        alamat = str(input("Alamat Pembeli => "))
-        d1.namaTransaksi(nama,nomor,alamat)
-        print("\nIngin Membeli Produk Yang Mana?")
-
+        d2 = dataPembeli()
+        nama = str(input("\nMasukkan Nama Pembeli => "))
+        nomor = str(input("\nNomor Telepon Pembeli => "))
+        alamat = str(input("\nAlamat Pembeli => "))
+        print(d2.cekPembelipass(nama,nomor,alamat))
+        if d2.cekPembelipass(nama,nomor,alamat) == None:
+            d1.namaTransaksi(nama,nomor,alamat,self.a)
+            d1.doTransaksi()
+        else:
+            d1.tempNama(nama,nomor,alamat,self.a)
+            d1.doTransaksi()
+        self.menuKasir(self.a)
     
-    def lihatProduk(self):
-        a = dataProduk()
-        a.show()
+    def lihatProduk(self,a):
+        self.a = a
+        b = dataProduk()
+        b.show()
         print("Menu")
         print("\n1. Kembali Menu Utama")
         masuk = str(input("Input Di Sini => "))
         if masuk == str(1):
-            self.menuKasir()
+            self.menuKasir(self.a)
         else:
             print("\nInput salah, Coba lagi\n")
-            self.lihatProduk()
-
+            self.lihatProduk(self.a)
 
 class transaksiKasir:
-    def namaTransaksi(self,a,b,c):
-        self.a = a
-        self.b = b
-        self.c = c
+    nama = ""
+    telepon = ""
+    alamat = ""
+    namakasir = ""
+    def namaTransaksi(self,a,b,c,d):
+        self.nama = a
+        self.telepon = b
+        self.alamat = c
+        self.namakasir = d
         r = dataPembeli()
-        r.insert(self.a,self.b,self.c)
+        r.insert(self.nama,self.telepon,self.alamat)
         # self.nama = str(input("Input Di Sini => "))
+
+    def tempNama(self,a,b,c,d):
+        self.nama = a
+        self.telepon = b
+        self.alamat = c
+        self.namakasir = d
 
     def doTransaksi(self):
         get = dataProduk()
@@ -436,26 +514,53 @@ class transaksiKasir:
             else:
                 flag = True
 
-        # tul = []
-        
+        namaProduk = []
+        totalHarga = 0
+        kembalian = 0
+        data1 = dataPembeli()
+        data2 = dataKasir()
+        data3 = dataTransaksi()
+        idpembeli = data1.cekid(self.nama,self.telepon,self.alamat)
+        idkasir = data2.cekidkasir(self.namakasir)
+
         for i in range(len(listProduk)):
-            print(listProduk[i], listKuantitas[i], listHarga[i])
-            # daftar = str(get.namaBarang(listProduk[i]))
-            # tul.append(daftar)
+            daftar = str(get.namaBarang(listProduk[i]))
+            namaProduk.append(daftar)
 
-        # tuples = tuple(tul)
+        for i in range(len(listHarga)):
+            totalHarga += listHarga[i]
 
-        # print(tuples)
+        print("\nTotal Keseluruhan Harga Adalah => ", totalHarga)
+
+        bayar = int(input("\nBerapa Uang Yang dibayar? => "))
+
+        kembalian = bayar - totalHarga
+
+        if kembalian >= 0 :
+            print("\n================ STRUK PESANAN ====================")
+            print("Atas Nama : ", self.nama)
+            print("Alamat : ", self.alamat)
+            print("Dengan Operator Kasir :", self.namakasir) 
+            print("Nama Produk \t|| Jumlah Pesanan || Jumlah Harga Per Pesan")
+            print("--------------------------------------------------")
+            for i in range(len(namaProduk)):
+                print(namaProduk[i],"\t\t", listKuantitas[i],"\t\t", listHarga[i])
+            print("--------------------------------------------------")
+            print("Total Harga : \t\t\t\t", totalHarga)
+            print("Kembalian : \t\t\t\t", kembalian)
+            for i in range(len(listProduk)):
+                data3.insert(idkasir,listProduk[i],idpembeli,listKuantitas[i],listHarga[i])
+            print("\n1. OK")
+            ok = str(input("\nMasukkan Input Di Sini => "))
+        else:
+            print("Maaf, Anda Tidak Bisa Melanjutkan Pembelian")
+
+
         
-        # print ("Dengan Produk {}\n{}".format(tuples[0],tuples[1]))
         
 
 
 
 
-
-
-p1 = transaksiKasir()
-p1.doTransaksi()
-
-
+p1 = Sistem()
+p1.validasiAdmin()
