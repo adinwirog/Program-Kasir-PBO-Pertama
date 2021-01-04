@@ -293,9 +293,9 @@ class Sistem:
             if pilih == str(1):
                 t.delete()
                 ok = str(input("\nPress Any Input "))
-                self.adminTransaksi
+                self.adminTransaksi()
             else:
-                self.adminTransaksi
+                self.adminTransaksi()
         elif masuk == str(3):
             self.menuAdmin()
         elif masuk == str(4):
@@ -314,7 +314,7 @@ class Sistem:
             ok = str(input("\nPress Any Input "))
             self.menuAdmin()
         else:
-            self.menuAdmin
+            self.menuAdmin()
 
     def menuKasir(self,a):
         self.a = a
